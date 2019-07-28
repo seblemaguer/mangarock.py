@@ -108,7 +108,7 @@ def show_info_cmd(series_info):
 def main():
     argparser = create_argparser()
     args = argparser.parse_args()
-    use_png = args.png  # no webp in this house, mister!
+    use_png = args.png or args.cbz  # no webp in this house, mister!
     use_jpg = args.jpg  # no webp in this house, mister!
     show_info = args.show
 
@@ -134,7 +134,7 @@ def main():
     for chapter in get_chapters(args, series_info):
         chapter_name = chapter['name']
         chapter_name_secure = secure_filename(chapter_name)
-        chapter_dirpath = os.path.join(series_dirpath, slugify(chapter_name_secure))
+        chapter_dirpath  = os.path.join(series_dirpath, slugify(chapter_name_secure))
         chapter_cbz_filepath = f"{chapter_dirpath}.cbz"
 
         if os.path.exists(chapter_cbz_filepath):
@@ -203,12 +203,16 @@ def main():
             if has_downloaded:
                 sleep(choice([0.1, 0.2, 0.3, 0.4, 0.5]))
 
+        if args.cbz:
+            os.system(f"zip {chapter_cbz_filepath} {chapter_dirpath}/*.png")
+
         print(f"{chapter_name_secure} downloaded" + (has_failed_download and ' [fail]' or ''))
 
 
 def create_argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument('series', help='series oid')
+    parser.add_argument('-C', '--cbz', action="store_true", help="generate cbz per chapter")
     parser.add_argument('-c', '--chapters', nargs='?', help='comma separated chapter index list')
     parser.add_argument('-p', '--png', action="store_true", help='save images as png')
     parser.add_argument('-j', '--jpg', action="store_true", help='save images as jpg')
